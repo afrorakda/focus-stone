@@ -15,6 +15,7 @@
             --accent: #eee;
             --radius: 15px;
             --text-gray: #666;
+            --input-bg: #fafafa;
         }
 
         body {
@@ -26,7 +27,7 @@
             justify-content: center;
             min-height: 100vh;
             transition: background-color 0.5s, color 0.5s;
-            overflow: hidden;
+            /* overflow: hidden; -> 削除。スクロールを許可 */
             -webkit-font-smoothing: antialiased;
         }
 
@@ -39,7 +40,7 @@
         .container {
             width: 100%;
             max-width: 420px;
-            padding: 40px 20px;
+            padding: 40px 20px 80px; /* 下部paddingを増やし、フッターまで見やすく */
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -47,17 +48,18 @@
             position: relative;
         }
 
-        h1 { font-size: 2rem; font-weight: 800; margin-bottom: 8px; letter-spacing: -1px; }
-        .subtitle { font-size: 1rem; color: var(--text-gray); font-weight: 600; margin-bottom: 40px; }
+        h1 { font-size: 2rem; font-weight: 800; margin-bottom: 8px; letter-spacing: -1px; margin-top: 0; }
+        .subtitle { font-size: 1rem; color: var(--text-gray); font-weight: 600; margin-bottom: 30px; }
         body.focus-active h1, body.focus-active .subtitle { opacity: 0; pointer-events: none; }
 
         /* The Stone */
         .stone-container {
-            flex: 1;
+            width: 100%;
             display: flex;
             align-items: center;
             justify-content: center;
-            min-height: 300px;
+            min-height: 250px; /* 少し高さを調整 */
+            margin-bottom: 20px;
         }
 
         .stone {
@@ -86,53 +88,59 @@
             grid-template-columns: repeat(2, 1fr);
             gap: 12px;
             width: 100%;
-            margin-top: 20px;
+            margin-top: 0px;
             transition: opacity 0.3s;
+            margin-bottom: 40px;
         }
         body.focus-active .controls { opacity: 0; pointer-events: none; }
 
         .time-btn {
             background: var(--input-bg);
             border: 2px solid var(--accent);
-            padding: 15px;
+            padding: 18px 15px; /* iOS対策: タップエリアを確保 */
             border-radius: var(--radius);
             font-size: 1.1rem;
             font-weight: 800;
             cursor: pointer;
             color: var(--main);
             -webkit-appearance: none;
+            touch-action: manipulation;
         }
         .time-btn:active { transform: scale(0.95); background: var(--accent); }
 
         .stop-btn {
-            position: absolute;
-            bottom: 40px;
             background: rgba(255,255,255,0.1);
             border: 1px solid rgba(255,255,255,0.2);
             color: #555;
-            padding: 10px 20px;
+            padding: 12px 24px;
             border-radius: var(--radius);
-            font-size: 0.8rem;
+            font-size: 0.9rem;
             font-weight: 700;
-            display: none;
             cursor: pointer;
+            -webkit-appearance: none;
+            display: none;
+            margin-top: -20px; /* ボタンエリアの代わりに表示 */
+            margin-bottom: 40px;
         }
         body.focus-active .stop-btn { display: block; }
 
-        /* Footer Stuff */
-        footer { margin-top: 60px; font-size: 12px; color: #777; line-height: 1.8; font-weight: 500; }
-        body.focus-active footer { display: none; }
+        /* Footer Stuff (憲法踏襲) */
+        footer { margin-top: auto; padding-top: 20px; font-size: 12px; color: #777; line-height: 1.8; font-weight: 500; width: 100%; text-align: center; }
+        body.focus-active footer { opacity: 0; pointer-events: none; }
         footer a { color: inherit; text-decoration: underline; }
-        .footer-btns { margin-top: 30px; }
+        .footer-btns { margin-top: 0px; width: 100%; display: flex; flex-direction: column; align-items: center; }
         .kofi-btn {
             display: inline-block; background: var(--main); color: #fff;
             padding: 14px 28px; border-radius: var(--radius);
             text-decoration: none; font-weight: bold; font-size: 15px; margin-bottom: 15px;
+            touch-action: manipulation;
         }
         .home-btn {
             display: block; width: 70%; margin: 0 auto; background: var(--accent);
             color: var(--main); border: none; padding: 12px;
             border-radius: var(--radius); font-weight: 800; font-size: 14px; cursor: pointer;
+            -webkit-appearance: none;
+            touch-action: manipulation;
         }
 
         #modal {
@@ -192,6 +200,9 @@
     let wakeLock = null;
     let focusTimer = null;
 
+    // iOS Safari 対策: Kofiボタン等のaタグのhrefを確実にする
+    document.addEventListener('touchstart', function(){}, false);
+
     async function startFocus(mins) {
         // Request Wake Lock
         try {
@@ -204,6 +215,7 @@
 
         // UI State
         document.body.classList.add('focus-active');
+        window.scrollTo(0, 0); // タイマー開始時に上部にスクロール
         
         // Safety Limit & Timer
         const duration = mins * 60 * 1000;
