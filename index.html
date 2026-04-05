@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Focus Stone</title>
+    
+    <link rel="icon" href="image_82.png">
+    <link rel="apple-touch-icon" href="image_82.png">
+
+    <style>
+        :root {
+            --main: #333;
+            --bg: #fff;
+            --accent: #eee;
+            --radius: 15px;
+            --text-gray: #666;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg);
+            color: var(--main);
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+            transition: background-color 0.5s, color 0.5s;
+            overflow: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* Focus Mode Background */
+        body.focus-active {
+            background-color: #000;
+            color: #fff;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 420px;
+            padding: 40px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            box-sizing: border-box;
+            position: relative;
+        }
+
+        h1 { font-size: 2rem; font-weight: 800; margin-bottom: 8px; letter-spacing: -1px; }
+        .subtitle { font-size: 1rem; color: var(--text-gray); font-weight: 600; margin-bottom: 40px; }
+        body.focus-active h1, body.focus-active .subtitle { opacity: 0; pointer-events: none; }
+
+        /* The Stone */
+        .stone-container {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 300px;
+        }
+
+        .stone {
+            width: 120px;
+            height: 120px;
+            background: var(--main);
+            border-radius: 50%;
+            filter: blur(2px);
+            transition: transform 0.5s, background-color 0.5s;
+        }
+
+        body.focus-active .stone {
+            background: #333;
+            animation: breathe 8s infinite ease-in-out;
+        }
+
+        @keyframes breathe {
+            0%, 100% { transform: scale(1) translate(0, 0); opacity: 0.6; }
+            33% { transform: scale(1.05) translate(2px, -2px); opacity: 0.8; }
+            66% { transform: scale(0.98) translate(-1px, 2px); opacity: 0.5; }
+        }
+
+        /* Controls */
+        .controls {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            width: 100%;
+            margin-top: 20px;
+            transition: opacity 0.3s;
+        }
+        body.focus-active .controls { opacity: 0; pointer-events: none; }
+
+        .time-btn {
+            background: var(--input-bg);
+            border: 2px solid var(--accent);
+            padding: 15px;
+            border-radius: var(--radius);
+            font-size: 1.1rem;
+            font-weight: 800;
+            cursor: pointer;
+            color: var(--main);
+            -webkit-appearance: none;
+        }
+        .time-btn:active { transform: scale(0.95); background: var(--accent); }
+
+        .stop-btn {
+            position: absolute;
+            bottom: 40px;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            color: #555;
+            padding: 10px 20px;
+            border-radius: var(--radius);
+            font-size: 0.8rem;
+            font-weight: 700;
+            display: none;
+            cursor: pointer;
+        }
+        body.focus-active .stop-btn { display: block; }
+
+        /* Footer Stuff */
+        footer { margin-top: 60px; font-size: 12px; color: #777; line-height: 1.8; font-weight: 500; }
+        body.focus-active footer { display: none; }
+        footer a { color: inherit; text-decoration: underline; }
+        .footer-btns { margin-top: 30px; }
+        .kofi-btn {
+            display: inline-block; background: var(--main); color: #fff;
+            padding: 14px 28px; border-radius: var(--radius);
+            text-decoration: none; font-weight: bold; font-size: 15px; margin-bottom: 15px;
+        }
+        .home-btn {
+            display: block; width: 70%; margin: 0 auto; background: var(--accent);
+            color: var(--main); border: none; padding: 12px;
+            border-radius: var(--radius); font-weight: 800; font-size: 14px; cursor: pointer;
+        }
+
+        #modal {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.6); align-items: center; justify-content: center; z-index: 100;
+        }
+        .modal-content {
+            background: #fff; width: 85%; max-width: 340px; padding: 35px;
+            border-radius: var(--radius); text-align: left; position: relative; color: var(--main);
+        }
+        .close-x { position: absolute; top: 15px; right: 20px; font-size: 24px; color: #888; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Focus Stone</h1>
+    <p class="subtitle">Set a stone for your deep work.</p>
+
+    <div class="stone-container">
+        <div class="stone" id="stone"></div>
+    </div>
+
+    <div class="controls" id="controls">
+        <button class="time-btn" onclick="startFocus(15)">15 Min</button>
+        <button class="time-btn" onclick="startFocus(25)">25 Min</button>
+        <button class="time-btn" onclick="startFocus(45)">45 Min</button>
+        <button class="time-btn" onclick="startFocus(60)">60 Min</button>
+    </div>
+
+    <button class="stop-btn" onclick="stopFocus()">Tap to Release</button>
+
+    <div class="footer-btns">
+        <a href="https://ko-fi.com/afrorakda" target="_blank" class="kofi-btn">☕️buy me a coffee</a>
+        <button class="home-btn" onclick="showModal()">Add to Home Screen</button>
+    </div>
+
+    <footer>
+        <div>No login / No tracking / No ads / Browser only</div>
+        <div>Keep screen on during focus (Max 60m)</div>
+        <div><a href="https://afrorakda.com/privacy/">Privacy Policy</a> / afrorakda © 2026</div>
+    </footer>
+</div>
+
+<div id="modal" onclick="hideModal()">
+    <div class="modal-content" onclick="event.stopPropagation()">
+        <span class="close-x" onclick="hideModal()">×</span>
+        <h3>📱 Install</h3>
+        <p>Add to your home screen.</p>
+        <p>🍏 <strong>iPhone (Safari):</strong><br>Tap Share, then Add to Home Screen.</p>
+        <p>🤖 <strong>Android (Chrome):</strong><br>Tap Menu (⋮), then Add to Home Screen.</p>
+        <p style="font-size: 0.8rem; margin-top: 15px; color: #888;">Note: This tool uses Screen Wake Lock to prevent sleep while focus is active.</p>
+    </div>
+</div>
+
+<script>
+    let wakeLock = null;
+    let focusTimer = null;
+
+    async function startFocus(mins) {
+        // Request Wake Lock
+        try {
+            if ('wakeLock' in navigator) {
+                wakeLock = await navigator.wakeLock.request('screen');
+            }
+        } catch (err) {
+            console.log("Wake Lock failed");
+        }
+
+        // UI State
+        document.body.classList.add('focus-active');
+        
+        // Safety Limit & Timer
+        const duration = mins * 60 * 1000;
+        focusTimer = setTimeout(() => {
+            stopFocus();
+            // Optional: Soft vibration for notification if supported
+            if (window.navigator.vibrate) window.navigator.vibrate([200, 100, 200]);
+        }, duration);
+    }
+
+    async function stopFocus() {
+        if (focusTimer) clearTimeout(focusTimer);
+        
+        // Release Wake Lock
+        if (wakeLock !== null) {
+            await wakeLock.release();
+            wakeLock = null;
+        }
+
+        // UI State
+        document.body.classList.remove('focus-active');
+    }
+
+    function showModal() { document.getElementById('modal').style.display = 'flex'; }
+    function hideModal() { document.getElementById('modal').style.display = 'none'; }
+
+    // Re-request wake lock if tab becomes visible again during focus
+    document.addEventListener('visibilitychange', async () => {
+        if (wakeLock !== null && document.visibilityState === 'visible') {
+            wakeLock = await navigator.wakeLock.request('screen');
+        }
+    });
+</script>
+
+</body>
+</html>
